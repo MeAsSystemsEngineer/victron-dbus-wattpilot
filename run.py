@@ -58,7 +58,7 @@ WaitInterval = 3
 
 ### battery power input/charge settings
 ### adjust if system can charge 50 ampere or more
-MaxChargeCurrent = 35
+MaxChargeCurrentLimit = 35
 
 ### battery power output/discharge settings on wattpilot modes
 MaxDischargePowerWhenCarPlugged_eco = "1380.0"
@@ -227,8 +227,12 @@ def setDynamicMaxChargeCurrent():
         now = datetime.now()
         print("[" + str(now.strftime("%Y-%m-%d %H:%M:%S")) + "] [Debug] Value of /Settings/SystemSetup/MaxChargeCurrent is: " + str(MaxChargeCurrent))
         
-    RoundedSoC = round (Soc, -1)
-    DynamicChargeCurrent = round((101 - RoundedSoC) * MaxChargeCurrent / 100)
+    RoundedSoC = round(Soc, -1)
+    DynamicChargeCurrent = (100 - int(RoundedSoC)) * MaxChargeCurrentLimit / 100
+
+    if(debug):
+        now = datetime.now()
+        print("[" + str(now.strftime("%Y-%m-%d %H:%M:%S")) + "] [Debug] Value of RoundedSoC is " + str(RoundedSoC) + " and Value of DynamicChargeCurrent is " + str(DynamicChargeCurrent))
             
     if(DynamicChargeCurrent != MaxChargeCurrent):
         if(debug):
@@ -236,6 +240,10 @@ def setDynamicMaxChargeCurrent():
             print("[" + str(now.strftime("%Y-%m-%d %H:%M:%S")) + "] [Debug] Set charger power to " + str(DynamicChargeCurrent) + " ampere")
         
         output = dbusObjects['int_Settings_SystemSetup_MaxChargeCurrent'].set_value(DynamicChargeCurrent)
+    else:
+        if(debug):
+            now = datetime.now()
+            print("[" + str(now.strftime("%Y-%m-%d %H:%M:%S")) + "] [Debug] Nothing to do as /Settings/SystemSetup/MaxChargeCurrent is already at " + str(DynamicChargeCurrent) + " ampere")
     
     if(debugRV):
         now = datetime.now()
